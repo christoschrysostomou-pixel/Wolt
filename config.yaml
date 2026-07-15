@@ -1,0 +1,57 @@
+# Weekly report configuration for Metro Cyprus.
+#
+# The report is produced for a single "merchant" made up of several "venues"
+# (stores). Page 1 is a merchant-wide preview; every following page is a single
+# venue.
+
+merchant:
+  name: "Metro Cyprus"
+  currency: "EUR"
+  currency_symbol: "€"
+  # Timezone used to bucket orders into local hours/days.
+  timezone: "Asia/Nicosia"
+
+# Reporting window. If `week` is "last", the previous full ISO week
+# (Monday-Sunday) relative to today is used. You can also pin an explicit
+# window with start/end (inclusive, YYYY-MM-DD).
+period:
+  week: "last"
+  # start: "2026-07-06"
+  # end: "2026-07-12"
+
+# Venues that make up the merchant. venue_id must match the ids used by the
+# data source (Snowflake VENUE_ID). These are the Metro Cyprus stores.
+venues:
+  - venue_id: "metro-strovolos"
+    name: "Metro Strovolos"
+  - venue_id: "metro-nicosia-centre"
+    name: "Metro Nicosia Centre"
+  - venue_id: "metro-limassol"
+    name: "Metro Limassol"
+  - venue_id: "metro-larnaca"
+    name: "Metro Larnaca"
+  - venue_id: "metro-paphos"
+    name: "Metro Paphos"
+
+# Data source selection.
+#   csv       -> read pre-exported CSVs from data_dir (default, works offline)
+#   snowflake -> query Snowflake live (requires snowflake-connector-python and
+#                credentials via env vars, see src/wolt_report/loader.py)
+data_source: "csv"
+data_dir: "data"
+
+# Where to write the generated PDF.
+output_dir: "output"
+
+# Business targets used to colour KPIs (green/amber/red) on the report.
+targets:
+  pofr_pct: 98.0            # perfect order fulfilment rate, higher is better
+  punctuality_pct: 95.0     # % orders delivered on time
+  rejection_pct: 2.0        # max acceptable rejection rate
+  offline_pct: 1.0          # max acceptable offline %
+  rating: 4.7               # min acceptable average rating
+  late_orders_pct: 5.0      # max acceptable % late orders
+  substitution_pct: 5.0     # max acceptable substitution rate
+  unfulfilled_pct: 2.0      # max acceptable % unfulfilled items
+  avg_delivery_min: 35.0    # max acceptable average delivery time
+  prep_time_min: 12.0       # max acceptable prep time

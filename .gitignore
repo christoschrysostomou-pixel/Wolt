@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# Generated sample data (regenerate with --generate-sample)
+data/*.csv
+data/.sample
+
+# Keep the committed deliverable PDF; ignore ad-hoc outputs
+output/*
+!output/metro-cyprus_weekly_2026-W28.pdf

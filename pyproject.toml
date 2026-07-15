@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wolt-weekly-report"
+version = "1.0.0"
+description = "Weekly PDF performance report (with charts) for Wolt merchants, e.g. Metro Cyprus."
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib>=3.8",
+    "reportlab>=4.0",
+    "pandas>=2.0",
+    "numpy>=1.26",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+snowflake = ["snowflake-connector-python>=3.7"]
+
+[project.scripts]
+wolt-report = "wolt_report.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+wolt_report = ["queries.sql"]
