@@ -141,17 +141,42 @@ is the raw May-June 2026 Metro Cyprus Monthly Picker Metrics export (2 sheets,
 `data/Metro_Cyprus_Monthly_Picker_Metrics_May-June_2026_with_Customer_Feedback.xlsx`
 in this repo is the result of running step 1 on that export, and
 `data/monthly_picker_metrics.csv` is the result of running step 2 on it
-(4,312 rows). A Snowflake connection to pull the matching `Customer Feedback`
-text was attempted again when this workbook was last regenerated, and is
-still not possible in this environment:
+(4,312 rows). A real Snowflake connection to pull the matching `Customer
+Feedback` text has been attempted twice now and is still not working, for
+two different reasons each time:
 
-- No Snowflake MCP server is registered in the tool catalog for this run.
-- No Snowflake client (`snowflake-connector-python`, `snowsql`, etc.) or
-  config (`~/.snowflake`, `~/.dbt`, etc.) is present to fall back on.
-- Only a `SNOWFLAKE_PASSWORD` secret is injected, with no
-  `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_WAREHOUSE`,
-  `SNOWFLAKE_DATABASE`, or `SNOWFLAKE_SCHEMA` alongside it — a password alone
-  is not enough to open a `snowflake.connector.connect()` session.
+1. **No Snowflake MCP server** is registered in this run's tool catalog, so
+   there is no MCP path to Snowflake.
+2. **Given a `connections.toml`-style snippet** (account
+   `DOORDASH-IG78751_AWS_EU_WEST_1`, user
+   `CHRISTOS.CHRYSOSTOMOU@WOLT.COM`, `authenticator = "externalbrowser"`,
+   `role = "BASE_USER"`), two direct-connection paths were tried with
+   `snowflake-connector-python`:
+   - `authenticator="externalbrowser"` — this is SSO via Okta and opened a
+     real browser to a live `doordash.okta.com` SAML login page, but
+     **requires a human to interactively complete the Okta login (and MFA)
+     in that browser**. A cloud agent runs unattended in the background with
+     nobody to click through that flow, so this hangs indefinitely and
+     can't be completed autonomously.
+   - Using the `SNOWFLAKE_PASSWORD` secret as a password instead: the
+     connector detected it's actually a **Programmatic Access Token** (a
+     JWT, not expired) and sent it as one, which is the right approach for
+     headless/unattended auth. Snowflake's server reached and responded
+     with `250001 (08001)` / internal code `394400`: **"Programmatic access
+     token is invalid."** This happened consistently across every account
+     format (`DOORDASH-IG78751_AWS_EU_WEST_1` and `DOORDASH-IG78751`), every
+     username format (with/without the `@wolt.com` domain), and every role
+     (`BASE_USER`, `PUBLIC`, unset) — so it isn't a role-mapping or account-
+     string issue, the token itself is being rejected by Snowflake. Per
+     Snowflake's own docs, `PAT_INVALID` means the token isn't linked to
+     this user, the user/role wasn't found, or the token is otherwise not
+     valid for this account — something only whoever generated/owns that
+     token in Snowflake can fix (see the `SHOW PROGRAMMATIC ACCESS TOKENS
+     FOR USER ...` check below).
+
+`warehouse`, `database`, and `schema` were also `<none selected>` in the
+snippet, which would additionally block running any query once/if auth
+succeeds.
 
 So `Customer Feedback` is present as a column but blank for every row — no
 feedback text was fabricated. Re-run step 1 with `--feedback-csv` once a real

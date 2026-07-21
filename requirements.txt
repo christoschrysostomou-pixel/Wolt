@@ -1,2 +1,3 @@
 matplotlib
 openpyxl
+snowflake-connector-python
