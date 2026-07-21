@@ -82,7 +82,9 @@ MONTHLY_PICKER_COLUMNS = [
     "Order Number",
     "Rating of Goods",
     "Goods Items Full Amount",
+    "Customer Feedback",
 ]
+OPTIONAL_MONTHLY_PICKER_COLUMNS = {"Customer Feedback"}
 
 ALL_WEEKLY_METRICS = (
     PURCHASE_METRICS
@@ -211,7 +213,11 @@ def load_monthly_picker(path: Path) -> list[dict[str, str]]:
 
     with path.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
-        missing = [column for column in MONTHLY_PICKER_COLUMNS if column not in reader.fieldnames]
+        missing = [
+            column
+            for column in MONTHLY_PICKER_COLUMNS
+            if column not in OPTIONAL_MONTHLY_PICKER_COLUMNS and column not in reader.fieldnames
+        ]
         if missing:
             raise ValueError(
                 f"{path} is missing required monthly picker columns: {', '.join(missing)}"

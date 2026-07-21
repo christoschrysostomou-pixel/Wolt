@@ -55,6 +55,7 @@ sections:
   - Order Number
   - Rating of Goods
   - Goods Items Full Amount
+  - Customer Feedback, where available
 
 ## Data inputs
 
@@ -81,8 +82,10 @@ cp data/monthly_picker_metrics_template.csv data/monthly_picker_metrics.csv
 | `dimension` | Optional dimension name for chart series, for example `hour`, `day`, or `reason`. |
 | `dimension_value` | Optional dimension value, for example `13:00`, `Monday`, or a rejection reason. |
 
-`data/monthly_picker_metrics.csv` must contain exactly the columns in
-`data/monthly_picker_metrics_template.csv`.
+`data/monthly_picker_metrics.csv` must contain the columns in
+`data/monthly_picker_metrics_template.csv`. `Customer Feedback` may be left
+blank when no feedback is available, and older exports without that column are
+still accepted.
 
 ## Generate the PDF
 
