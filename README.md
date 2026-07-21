@@ -1,7 +1,8 @@
 # Wolt Reports
 
-This repository contains a PDF report generator for Metro Cyprus weekly
-merchant and venue reporting.
+This repository contains report generators for Metro Cyprus weekly merchant
+and venue reporting. The same underlying data can be exported as a PDF (with
+charts) or as a downloadable spreadsheet compatible with Google Sheets.
 
 ## Metro Cyprus weekly report
 
@@ -100,7 +101,7 @@ tabs, download them as CSV files named:
 blank when no feedback is available, and older exports without that column are
 still accepted.
 
-## Generate the PDF
+## Generate the reports
 
 Install dependencies:
 
@@ -108,25 +109,48 @@ Install dependencies:
 python3 -m pip install -r requirements.txt
 ```
 
-Generate last week's report:
+Generate last week's PDF report:
 
 ```bash
 python3 reports/generate_metro_cyprus_weekly_report.py
 ```
 
-Generate a specific reporting period:
+Generate last week's report as a downloadable spreadsheet (`.xlsx`), openable
+directly in Google Sheets or Excel:
+
+```bash
+python3 reports/generate_metro_cyprus_weekly_sheet.py
+```
+
+The spreadsheet mirrors the PDF: a `Merchant Overview` tab, a `Venue Summary`
+tab (one row per venue), one tab per metric section (Purchases, Wolt+,
+Operations, Quality, Additions & Deductions, Picker), and a
+`Monthly Picker Metrics` tab. To open it in Google Sheets, upload the
+generated `.xlsx` file to Google Drive, then right-click it and choose
+**Open with > Google Sheets** (or use **File > Import** from within Sheets).
+
+Both generators accept the same period flags:
 
 ```bash
 python3 reports/generate_metro_cyprus_weekly_report.py \
   --period-start 2026-07-06 \
   --period-end 2026-07-12
+
+python3 reports/generate_metro_cyprus_weekly_sheet.py \
+  --period-start 2026-07-06 \
+  --period-end 2026-07-12
 ```
 
-The output is written to `reports/output/` by default.
+Both write output to `reports/output/` by default, and both read from
+`reports/metro_cyprus_data.py`'s shared loaders so the PDF and spreadsheet
+never drift from each other.
 
-## Current generated artifact
+## Current generated artifacts
 
 The Snowflake MCP connection was unavailable in this run, so the generated
-Metro Cyprus PDF for `2026-07-06` to `2026-07-12` is a structured report shell
-with every unavailable chart and KPI explicitly marked `N/A`. It should be
-regenerated after the source exports are added.
+Metro Cyprus PDF and spreadsheet for `2026-07-06` to `2026-07-12` are
+structured report shells with every unavailable chart, KPI, and cell
+explicitly marked `N/A`. Regenerate both after the source exports are added:
+
+- `reports/output/metro_cyprus_weekly_report_2026-07-06_to_2026-07-12.pdf`
+- `reports/output/metro_cyprus_weekly_report_2026-07-06_to_2026-07-12.xlsx`
