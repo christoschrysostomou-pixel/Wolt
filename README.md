@@ -69,6 +69,19 @@ cp data/weekly_metrics_template.csv data/weekly_metrics.csv
 cp data/monthly_picker_metrics_template.csv data/monthly_picker_metrics.csv
 ```
 
+Alternatively, use the Google Sheets-compatible workbook:
+
+```bash
+python3 reports/create_google_sheets_template.py
+```
+
+This creates `data/metro_cyprus_report_google_sheets_template.xlsx`, which can
+be uploaded to Google Drive and opened with Google Sheets. After populating the
+tabs, download them as CSV files named:
+
+- `data/weekly_metrics.csv`
+- `data/monthly_picker_metrics.csv`
+
 `data/weekly_metrics.csv` columns:
 
 | Column | Description |
