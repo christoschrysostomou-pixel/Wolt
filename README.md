@@ -135,16 +135,30 @@ use these two scripts instead of hand-editing CSV:
 
 3. Regenerate the reports (see below) to pick up the new data.
 
+`data/source_exports/Metro_Cyprus_Monthly_Picker_Metrics_May-June_2026.xlsx`
+is the raw May-June 2026 Metro Cyprus Monthly Picker Metrics export (2 sheets,
+4,312 rows across 7 venues, no `Customer Feedback` column yet).
 `data/Metro_Cyprus_Monthly_Picker_Metrics_May-June_2026_with_Customer_Feedback.xlsx`
-in this repo is the result of running step 1 on the May-June 2026 Metro
-Cyprus Monthly Picker Metrics export, and `data/monthly_picker_metrics.csv`
-is the result of running step 2 on it (4,312 rows). The Snowflake MCP
-connection was unavailable when this was generated (no working Snowflake
-tool access and no connection parameters besides a redacted password in this
-environment), so `Customer Feedback` is present as a column but blank for
-every row — no feedback text was fabricated. Re-run step 1 with
-`--feedback-csv` once a real customer feedback export is available, keyed by
-`Purchase ID` or `Order Number`.
+in this repo is the result of running step 1 on that export, and
+`data/monthly_picker_metrics.csv` is the result of running step 2 on it
+(4,312 rows). A Snowflake connection to pull the matching `Customer Feedback`
+text was attempted again when this workbook was last regenerated, and is
+still not possible in this environment:
+
+- No Snowflake MCP server is registered in the tool catalog for this run.
+- No Snowflake client (`snowflake-connector-python`, `snowsql`, etc.) or
+  config (`~/.snowflake`, `~/.dbt`, etc.) is present to fall back on.
+- Only a `SNOWFLAKE_PASSWORD` secret is injected, with no
+  `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_WAREHOUSE`,
+  `SNOWFLAKE_DATABASE`, or `SNOWFLAKE_SCHEMA` alongside it — a password alone
+  is not enough to open a `snowflake.connector.connect()` session.
+
+So `Customer Feedback` is present as a column but blank for every row — no
+feedback text was fabricated. Re-run step 1 with `--feedback-csv` once a real
+customer feedback export is available, keyed by `Purchase ID` or
+`Order Number` (for example, once the Snowflake MCP integration is enabled
+for cloud agents, or the missing account/user/warehouse secrets are added
+alongside `SNOWFLAKE_PASSWORD`).
 
 ## Generate the reports
 
