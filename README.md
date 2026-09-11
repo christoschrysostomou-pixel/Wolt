@@ -211,6 +211,28 @@ succeeds.
    ideally provide a `SNOWFLAKE_ACCOUNT` secret explicitly so it no longer
    has to be inferred.
 
+4. **A follow-up in that same run** made a raw REST call to
+   `/session/v1/login-request` directly (bypassing the connector, to see
+   the full, unfiltered response) and also retried the connector with five
+   different roles (`PUBLIC`, `SYSADMIN`, `ACCOUNTADMIN`, `ANALYST`,
+   `BASE_USER`, and none). Two useful new facts came out of this:
+   - Snowflake's raw response confirms it *does* recognize `SNOWFLAKE_USER`
+     as a real login (the response's `loginName` field echoed back the
+     exact value of the `SNOWFLAKE_USER` secret verbatim) with
+     `"authnMethod": "PAT"`. So the account correctly identifies both the
+     user and that this is a PAT-based login attempt — it isn't rejecting
+     it as some other authenticator or an unrecognized user outright.
+   - Every one of the five role variations still returned the exact same
+     `394400` / `"Programmatic access token is invalid."`, ruling out a
+     role/`ROLE_RESTRICTION` mismatch as the cause (a known cause of this
+     same error per Snowflake's terraform provider issue tracker).
+
+   Whoever administers this Snowflake account can check the token status
+   directly with `SHOW PROGRAMMATIC ACCESS TOKENS FOR USER <the login name
+   in the SNOWFLAKE_USER secret>;` to see whether it's active, expired,
+   disabled, or was generated for a different account than
+   `DOORDASH-IG78751_AWS_EU_WEST_1`.
+
 So `Customer Feedback` is present as a column but blank for every row — no
 feedback text was fabricated. Re-run step 1 with `--feedback-csv` once a real
 customer feedback export is available, keyed by `Purchase ID` or
