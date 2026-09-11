@@ -178,6 +178,39 @@ two different reasons each time:
 snippet, which would additionally block running any query once/if auth
 succeeds.
 
+3. **A third attempt (new agent run, several weeks later)** had a
+   completely different pair of secrets injected: `SNOWFLAKE_USER` (a
+   different, shorter login name — not
+   `CHRISTOS.CHRYSOSTOMOU@WOLT.COM`) plus a new `SNOWFLAKE_PASSWORD` (a
+   different, non-expired JWT — confirmed by decoding both tokens' payload
+   claims and seeing different `kid`/`p` values). Both the default
+   password-as-PAT path and the explicit
+   `authenticator="PROGRAMMATIC_ACCESS_TOKEN"` / `token=` path were tried,
+   against both `DOORDASH-IG78751_AWS_EU_WEST_1` and `DOORDASH-IG78751`.
+   Every combination still returned the same `394400` /
+   `"Programmatic access token is invalid."` — from a *different* user and
+   a *different* token than before. Because two unrelated
+   user/token pairs both fail identically against this account, the most
+   likely explanations now are account-level, not credential-level:
+   - The account's authentication policy may not have
+     `'PROGRAMMATIC_ACCESS_TOKEN'` added to `AUTHENTICATION_METHODS` (PATs
+     are rejected account-wide until this is explicitly enabled — see
+     Snowflake's "Using programmatic access tokens for authentication"
+     docs), or
+   - A network policy may be restricting Snowflake connections to specific
+     IP ranges (e.g. corporate VPN/office IPs) that this cloud agent's
+     egress IP isn't part of, or
+   - `DOORDASH-IG78751_AWS_EU_WEST_1` isn't actually the right account for
+     these particular tokens (no `SNOWFLAKE_ACCOUNT` secret has ever been
+     provided to confirm this independently — it's been inferred from a
+     `connections.toml` snippet for a *different* user).
+
+   None of these are things a cloud agent can fix or work around from the
+   client side — someone with Snowflake account-admin access needs to check
+   the authentication policy and network policy for this account/user, and
+   ideally provide a `SNOWFLAKE_ACCOUNT` secret explicitly so it no longer
+   has to be inferred.
+
 So `Customer Feedback` is present as a column but blank for every row — no
 feedback text was fabricated. Re-run step 1 with `--feedback-csv` once a real
 customer feedback export is available, keyed by `Purchase ID` or
