@@ -135,15 +135,36 @@ use these two scripts instead of hand-editing CSV:
 
 3. Regenerate the reports (see below) to pick up the new data.
 
-`data/source_exports/Metro_Cyprus_Monthly_Picker_Metrics_May-June_2026.xlsx`
-is the raw May-June 2026 Metro Cyprus Monthly Picker Metrics export (2 sheets,
-4,312 rows across 7 venues, no `Customer Feedback` column yet).
+If instead you already have a **flat CSV** with `Customer Feedback` merged
+in (for example, a Snowflake/Looker query result joining Monthly Picker
+Metrics with feedback text, keyed by `Purchase ID`), use
+`reports/import_monthly_picker_csv.py` instead — it writes the pipeline CSV
+and rebuilds the multi-sheet `.xlsx` workbook in one step, splitting rows
+into one sheet per calendar month:
+
+```bash
+python3 reports/import_monthly_picker_csv.py \
+  path/to/Monthly_Picker_Metrics_with_customer_comments.csv \
+  --csv-output data/monthly_picker_metrics.csv \
+  --xlsx-output data/Metro_Cyprus_Monthly_Picker_Metrics_with_Customer_Feedback.xlsx
+```
+
+### Current state of the May-June 2026 data
+
+`data/source_exports/Metro_Cyprus_Monthly_Picker_Metrics_May-June_2026_with_customer_comments.csv`
+is the latest raw export provided (a flat CSV, 55,601 rows across the same 7
+venues, spanning 2026-05-02 to 2026-06-30, with real per-order timestamps and
+`Customer Feedback` already merged in for 116 rows — this supersedes the
+earlier, smaller `Metro_Cyprus_Monthly_Picker_Metrics_May-June_2026.xlsx`
+export, which had 4,312 rows and no feedback at all).
 `data/Metro_Cyprus_Monthly_Picker_Metrics_May-June_2026_with_Customer_Feedback.xlsx`
-in this repo is the result of running step 1 on that export, and
-`data/monthly_picker_metrics.csv` is the result of running step 2 on it
-(4,312 rows). A real Snowflake connection to pull the matching `Customer
-Feedback` text has been attempted twice now and is still not working, for
-two different reasons each time:
+and `data/monthly_picker_metrics.csv` in this repo are the result of running
+`reports/import_monthly_picker_csv.py` on it — the first real, non-fabricated
+`Customer Feedback` text in this repo's Monthly Picker Metrics data.
+
+**August 2026 data has not been added.** A Snowflake connection to pull it
+directly has been attempted repeatedly and is still not working, for several
+different reasons across attempts:
 
 1. **No Snowflake MCP server** is registered in this run's tool catalog, so
    there is no MCP path to Snowflake.
@@ -233,12 +254,22 @@ succeeds.
    disabled, or was generated for a different account than
    `DOORDASH-IG78751_AWS_EU_WEST_1`.
 
-So `Customer Feedback` is present as a column but blank for every row — no
-feedback text was fabricated. Re-run step 1 with `--feedback-csv` once a real
-customer feedback export is available, keyed by `Purchase ID` or
-`Order Number` (for example, once the Snowflake MCP integration is enabled
-for cloud agents, or the missing account/user/warehouse secrets are added
-alongside `SNOWFLAKE_PASSWORD`).
+5. **A later request asked to extend this to August 2026 via Snowflake.**
+   The exact same `SNOWFLAKE_USER`/`SNOWFLAKE_PASSWORD` secret pair from
+   attempts 3-4 (confirmed unchanged by decoding the JWT again — identical
+   claims) was re-tried and returned the identical `394400` /
+   `"Programmatic access token is invalid."` error. No August data has been
+   added because of this — there is currently no working path to Snowflake
+   to pull it, and no August export has been provided as a file either.
+
+Real feedback text (not fabricated — merged in from whatever process
+produced the uploaded CSV) is present for the 116 May-June rows that have
+it, per the "Current state" section above. Re-run
+`reports/import_monthly_picker_csv.py` (or
+`reports/add_customer_feedback_column.py --feedback-csv ...` for the
+xlsx-based flow) whenever a new export — including August data — becomes
+available, whether that's via a working Snowflake connection or a manual
+CSV/xlsx export.
 
 ## Generate the reports
 
@@ -286,14 +317,16 @@ never drift from each other.
 
 ## Current generated artifacts
 
-The Snowflake MCP connection was unavailable in this run, so the weekly
-metrics (Purchases, Wolt+, Operations, Quality, Additions & Deductions,
-Picker, and per-venue pages) in the generated Metro Cyprus PDF and
-spreadsheet for `2026-07-06` to `2026-07-12` are still explicitly marked
-`N/A` — no values were fabricated. The **Monthly Picker Metrics** section,
-however, is populated with the real May-June 2026 export (4,312 rows across
-7 venues), with `Customer Feedback` present but blank for the same reason.
-Regenerate both after the weekly source exports are added:
+A working Snowflake connection has never been available in any run so far
+(see above), so the weekly metrics (Purchases, Wolt+, Operations, Quality,
+Additions & Deductions, Picker, and per-venue pages) in the generated Metro
+Cyprus PDF and spreadsheet for `2026-07-06` to `2026-07-12` are still
+explicitly marked `N/A` — no values were fabricated. The
+**Monthly Picker Metrics** section, however, is populated with the real
+May-June 2026 export (55,601 rows across 7 venues, real per-order
+timestamps, `Customer Feedback` populated for 116 rows — see "Current state
+of the May-June 2026 data" above). Regenerate both after the weekly source
+exports (and August Monthly Picker data) are added:
 
 - `reports/output/metro_cyprus_weekly_report_2026-07-06_to_2026-07-12.pdf`
 - `reports/output/metro_cyprus_weekly_report_2026-07-06_to_2026-07-12.xlsx`
