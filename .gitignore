@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+sql/generated_metro_cyprus_picker_metrics.sql
+data/snowflake_picker_bindings.json
+.creds/
