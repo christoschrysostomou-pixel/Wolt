@@ -267,9 +267,52 @@ produced the uploaded CSV) is present for the 116 May-June rows that have
 it, per the "Current state" section above. Re-run
 `reports/import_monthly_picker_csv.py` (or
 `reports/add_customer_feedback_column.py --feedback-csv ...` for the
-xlsx-based flow) whenever a new export — including August data — becomes
-available, whether that's via a working Snowflake connection or a manual
-CSV/xlsx export.
+xlsx-based flow) whenever a new export — including August/September data —
+becomes available, whether that's via a working Snowflake connection or a
+manual CSV/xlsx export.
+
+6. **A September 2026 request landed in a run with new secrets:**
+   `SNOWFLAKE_USER`, `SNOWFLAKE_PASSWORD`,
+   `SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD`, and — new this round —
+   **`WOLT_SNOWFLAKE_PAT`**. Trying all three password-like secrets against
+   `DOORDASH-IG78751_AWS_EU_WEST_1` and `DOORDASH-IG78751` produced a
+   breakthrough: `SNOWFLAKE_PASSWORD` and
+   `SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD` both still fail with the same
+   `394400` `PAT_INVALID` as every previous token, but **`WOLT_SNOWFLAKE_PAT`
+   against `DOORDASH-IG78751_AWS_EU_WEST_1` fails with a *different*,
+   much more specific error:**
+   ```
+   390432 (08001): Fail : Network policy is required.
+   ```
+   A raw `/session/v1/login-request` call confirms the full picture:
+   `"authnMethod": "PAT"`, `loginName` echoes the `SNOWFLAKE_USER` secret's
+   value (a real, recognized login), and the token itself is accepted —
+   it's rejected only because **the user has no `NETWORK_POLICY` attached,
+   which Snowflake requires before it will honor any programmatic access
+   token login**, regardless of role/warehouse/database. This is the first
+   attempt where the token passed validation at all; this error happens at
+   a later stage than every previous `PAT_INVALID` failure.
+
+   **This is a one-time, precise fix for a Snowflake admin to apply.**
+   Since Cursor cloud agents run from a fresh, non-static IP on every run
+   (an IP-allowlist network policy isn't practical here), the recommended
+   fix is to relax the PAT network-policy *requirement* specifically,
+   without weakening any network policy that may already protect other
+   login methods for this user:
+   ```sql
+   CREATE AUTHENTICATION POLICY wolt_pat_no_network_required
+     PAT_POLICY = (NETWORK_POLICY_EVALUATION = ENFORCED_NOT_REQUIRED);
+   ALTER USER "<login name in the SNOWFLAKE_USER secret>"
+     SET AUTHENTICATION POLICY wolt_pat_no_network_required;
+   ```
+   (Alternative, only if the agent's egress IP is static/known in your
+   setup: `CREATE NETWORK POLICY ... ALLOWED_IP_LIST = (...); ALTER USER
+   ... SET NETWORK_POLICY = ...;` — not recommended here since the IP
+   changes per cloud agent run.)
+
+   `SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_DATABASE`, and `SNOWFLAKE_SCHEMA`
+   secrets are still missing and will be needed to run any query once this
+   is resolved — add them alongside `WOLT_SNOWFLAKE_PAT`.
 
 ## Generate the reports
 
