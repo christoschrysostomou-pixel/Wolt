@@ -1,73 +1,67 @@
 # Berezka Cuisine — Limassol order geography
 
 Merchant-facing map of **where Wolt customers of Berezka Cuisine are**,
-for advertising planning. The map is aggregated to ~1 km cells or postal
-codes. It never writes individual delivery addresses.
+for advertising planning. It colours official Cyprus **postal-code areas**
+across greater Limassol and ranks the busiest ones. It never plots
+individual delivery addresses. Kitchen pins are a separate layer.
 
-## What this cloud run could and could not do
+Open this file in a browser:
 
-Wolt Snowflake Production (`doordash-ig78751_aws_eu_west_1`) requires
-DoorDash Okta SSO. In this Cloud Agent the sign-in browser runs inside
-the VM, so the session never completes. The same blocker stopped the
-Metro Cyprus extracts in this repo.
+`reports/berezka_limassol_order_map/output/berezka_limassol_order_map.html`
 
-Until SSO works on **your laptop**, this folder ships:
+## What you should see
 
-1. **Kitchen coverage** from public Wolt / [berezka.cy/en/shops](https://berezka.cy/en/shops) listings (7 Limassol venues, Erimi → Agios Tychonas).
-2. An extractor that pulls **aggregated** order geography once Snowflake is signed in.
-3. A renderer that turns that aggregate (or a Looker CSV) into a shareable HTML map.
+1. Grey postal-code polygons covering Erimi → Agios Tychonas (the city,
+   not just the seven kitchens).
+2. After you load an order CSV: **orange choropleth + a ranking table**
+   of the areas with the most delivered orders.
+3. Areas with fewer than **5** orders stay uncoloured.
 
-This is **not** a substitute for the order heatmap. Kitchen pins show
-where food is prepared, not where demand is.
+Until a CSV is loaded, there is no customer heatmap — this Cloud Agent
+cannot finish DoorDash Okta SSO against Wolt Snowflake Production, so
+live order counts are not in the file.
 
-## Fastest ways to get the real heatmap
+## Fastest way to get the heatmap (Looker)
 
-### A. Local Cursor (preferred)
-
-On your Mac, in this repo:
-
-```bash
-python3 reports/berezka_limassol_order_map/extract_order_geography.py --months 12
-python3 reports/berezka_limassol_order_map/render_map.py
-open reports/berezka_limassol_order_map/output/berezka_limassol_order_map.html
-```
-
-Complete the Okta window when `snow` opens it. User:
-`christos.chrysostomou@wolt.com`. Account: `doordash-ig78751_aws_eu_west_1`.
-
-### B. Looker export (no Python)
-
-1. Open [looker.wolt.com](https://looker.wolt.com).
-2. Explore **core / f_purchases** (same explore as the Metro Cyprus sales file).
+1. Open [looker.wolt.com](https://looker.wolt.com) on your laptop.
+2. Explore **core / f_purchases**.
 3. Filters:
    - Venue Name contains `Berezka`
    - Venue City / Country = Limassol / CYP
    - Time Delivered = last 12 months
    - Marketplace delivered orders only
-4. Dimensions: delivery H3 / geohash / postal code / neighbourhood
-   (whatever the explore exposes — **not** street address).
-5. Measures: count of purchases, GOV EUR.
-6. Export CSV and drop it here as `output/looker_areas.csv` with columns:
+4. Dimension: **delivery postal code** (best), or delivery H3 / lat-lng.
+   Do not add street address.
+5. Measure: count of purchases (and GOV if you want it).
+6. Export CSV and drop it on the map page (or save as
+   `output/looker_areas.csv` and re-run the renderer below).
 
-   `area_name,lat,lng,orders,gov_eur,venue_name` (venue_name optional)
+Useful CSV columns (header names can vary):
 
-7. Render:
+`postal_code,orders`
+
+or
+
+`lat,lng,orders`
+
+or one row per order with a postal code — the page aggregates and then
+drops areas under 5 orders.
+
+## Local Snowflake (same map)
+
+On your Mac, complete the Okta window `snow` opens
+(`christos.chrysostomou@wolt.com`, account `doordash-ig78751_aws_eu_west_1`):
 
 ```bash
-python3 reports/berezka_limassol_order_map/render_map.py --csv reports/berezka_limassol_order_map/output/looker_areas.csv
+python3 reports/berezka_limassol_order_map/extract_order_geography.py --months 12
+python3 reports/berezka_limassol_order_map/render_map.py
 ```
 
-### C. Partner Hub
+## Partner Hub
 
 If the merchant already has **Insights → heatmap** in Partner Hub, that
-is the live product view. This pack is for a branded, shareable overview
-plus area ranking for ads.
-
-## Privacy
-
-The extractor drops any area with fewer than **5** delivered orders
-before writing files. Do not add street-level columns to the Looker
-export if you will send the HTML to the merchant.
+is the live product view. This pack is the branded, shareable overview
+plus an area ranking for ads.
 
 ## Scope the extractor uses
 
@@ -75,4 +69,5 @@ export if you will send the HTML to the merchant.
 - Geography: Limassol / CYP
 - Default window: last 12 calendar months, `TIME_DELIVERED` in `Asia/Nicosia`
 - Channel: marketplace delivered orders when the flag exists
-- Grain: ~1 km rounded lat/lng cells when coordinates exist; otherwise postal / district. Looker H3 is also fine if you export from the explore.
+- Grain: ~1 km cells or postal / district; Looker H3 also works
+- Privacy: areas with fewer than 5 orders are omitted

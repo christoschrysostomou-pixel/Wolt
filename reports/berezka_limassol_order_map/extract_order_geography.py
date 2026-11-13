@@ -397,16 +397,31 @@ def build_orders_sql(
 
 def write_csv(rows: list[dict], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    fields = ["area_name", "lat", "lng", "orders", "gov_local", "venue_count", "share_pct"]
+    fields = [
+        "area_name",
+        "postal_code",
+        "lat",
+        "lng",
+        "orders",
+        "gov_local",
+        "venue_count",
+        "share_pct",
+    ]
     total = sum(float(r.get("ORDERS") or r.get("orders") or 0) for r in rows) or 1
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
         for row in rows:
             orders = float(row.get("ORDERS") or row.get("orders") or 0)
+            area_name = row.get("AREA_NAME") or row.get("area_name") or ""
+            postal = str(row.get("POSTAL_CODE") or row.get("postal_code") or "")
+            digits = str(area_name).split(".")[0]
+            if not postal and digits.isdigit() and len(digits) == 4:
+                postal = digits
             writer.writerow(
                 {
-                    "area_name": row.get("AREA_NAME") or row.get("area_name") or "",
+                    "area_name": area_name,
+                    "postal_code": postal,
                     "lat": row.get("LAT") or row.get("lat") or "",
                     "lng": row.get("LNG") or row.get("lng") or "",
                     "orders": int(orders),
