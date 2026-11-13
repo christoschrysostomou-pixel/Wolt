@@ -1,0 +1,86 @@
+{
+  "brand": "Berezka Cuisine",
+  "city": "Limassol",
+  "country": "CYP",
+  "as_of": "2026-11-13",
+  "note": "Public Wolt / berezka.cy shop listings. These are kitchen locations, not customer order density.",
+  "venues": [
+    {
+      "name": "Berezka Cuisine Modestou Panteli",
+      "wolt_slug": "berezka-cuisine-erimi",
+      "area": "Erimi / west Limassol",
+      "address": "Modestou Panteli 72, 3090 Limassol",
+      "postal_code": "3090",
+      "lat": 34.678515,
+      "lng": 32.918564,
+      "coord_source": "OSM Nominatim (Modestou Panteli, Erimi). Wolt slug is erimi; shop page lists 3090.",
+      "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-erimi"
+    },
+    {
+      "name": "Berezka Cuisine Pafou Street",
+      "wolt_slug": "berezka-pafou-street",
+      "area": "Omonia / Zakaki",
+      "address": "41 Pafou, 3051 Limassol",
+      "postal_code": "3051",
+      "lat": 34.6741,
+      "lng": 33.015797,
+      "coord_source": "OSM Nominatim (Pafou, Omonia)",
+      "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-pafou-street"
+    },
+    {
+      "name": "Berezka Cuisine Marina",
+      "wolt_slug": "berezka-marina-old-port",
+      "area": "Old Port / Marina",
+      "address": "6 Commandarias, 3036 Limassol",
+      "postal_code": "3036",
+      "lat": 34.672621,
+      "lng": 33.044058,
+      "coord_source": "Public place listing for Commandarias 6",
+      "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-marina-old-port"
+    },
+    {
+      "name": "Berezka Cuisine Academy",
+      "wolt_slug": "berezka-cuisine-academy",
+      "area": "Katholiki",
+      "address": "Arch. Makarios III Avenue 98, 3020 Limassol",
+      "postal_code": "3020",
+      "lat": 34.682877,
+      "lng": 33.030031,
+      "coord_source": "Public place listing for Makarios 98, Katholiki",
+      "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-academy"
+    },
+    {
+      "name": "Berezka Cuisine Makariou",
+      "wolt_slug": "berezka-cuisine-store",
+      "area": "Neapolis",
+      "address": "233A Arch. Makarios III Avenue, 3165 Limassol",
+      "postal_code": "3165",
+      "lat": 34.686107,
+      "lng": 33.058606,
+      "coord_source": "Public place listing for Makarios 233A, Neapolis",
+      "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-store"
+    },
+    {
+      "name": "Berezka Cuisine Germasogeia",
+      "wolt_slug": "berezka-cuisine-germasogeia",
+      "area": "Potamos Germasogeias",
+      "address": "Georgiou A' 91, Germasogeia 4048",
+      "postal_code": "4048",
+      "lat": 34.693481,
+      "lng": 33.083083,
+      "coord_source": "OSM Nominatim (Vasileos Georgiou I, Potamos Germasogeias)",
+      "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-germasogeia"
+    },
+    {
+      "name": "Berezka Cuisine Four Seasons",
+      "wolt_slug": "berezka-cuisine-franklin-roosevelt",
+      "area": "Agios Tychonas / Amathus",
+      "address": "Amathountos 96, Agios Tychon 4532",
+      "postal_code": "4532",
+      "lat": 34.708727,
+      "lng": 33.124905,
+      "coord_source": "OSM Nominatim (96 Leoforos Amathountos, Agios Tychonas)",
+      "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-franklin-roosevelt"
+    }
+  ]
+}

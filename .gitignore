@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.DS_Store
+reports/berezka_limassol_order_map/output/areas.csv
+reports/berezka_limassol_order_map/output/looker_areas.csv
+reports/berezka_limassol_order_map/output/snowflake_bindings.json
+reports/berezka_limassol_order_map/output/matched_venues.json
+reports/berezka_limassol_order_map/output/geo_column_search.json
+reports/berezka_limassol_order_map/output/generated_order_geography.sql

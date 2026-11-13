@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Berezka Cuisine — Limassol order geography</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root { --ink: #1f2328; --muted: #5b6169; --line: #d8dce2; --bg: #f6f5f1; --card: #fff; --accent: #134f5c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
+    header { padding: 20px 24px 8px; max-width: 1100px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 6px; font-weight: 650; }
+    .sub { color: var(--muted); max-width: 720px; }
+    .banner { max-width: 1100px; margin: 8px auto 0; padding: 10px 14px; background: #fff8e3; border: 1px solid #ead9a0; }
+    .wrap { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; max-width: 1100px; margin: 16px auto 32px; padding: 0 24px; }
+    @media (max-width: 860px) { .wrap { grid-template-columns: 1fr; } }
+    #map { height: 560px; border: 1px solid var(--line); background: #e8e4db; }
+    aside { background: var(--card); border: 1px solid var(--line); padding: 14px 16px; }
+    h2 { font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .legend { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    footer { max-width: 1100px; margin: 0 auto 28px; padding: 0 24px; color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Berezka Cuisine — Limassol customer geography</h1>
+    <p class="sub">Approximate picture of where Wolt customers are, for advertising planning. Areas with fewer than 5 orders are omitted.</p>
+  </header>
+  <div class="banner"><strong>Order heatmap not loaded.</strong> This view shows kitchen locations only. Complete Snowflake SSO locally or drop a Looker area CSV, then re-run <code>render_map.py</code>.</div>
+  <div class="wrap">
+    <div>
+      <div id="map"></div>
+      <div class="legend">
+        <span><span class="dot" style="background:#134f5c"></span> Kitchen</span>
+        <span><span class="dot" style="background:#c45c26"></span> Order density (aggregated)</span>
+      </div>
+    </div>
+    <aside>
+      <h2>Highest-demand areas</h2>
+      <p>No aggregated order areas yet. Run the Snowflake extractor or pass a Looker CSV.</p>
+    </aside>
+  </div>
+  <footer>
+    Source: public kitchen listings only. Times in Asia/Nicosia. Kitchen pins from public Wolt / berezka.cy listings.
+    Do not treat kitchen locations as customer demand.
+  </footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const venues = [{"name": "Berezka Cuisine Modestou Panteli", "wolt_slug": "berezka-cuisine-erimi", "area": "Erimi / west Limassol", "address": "Modestou Panteli 72, 3090 Limassol", "postal_code": "3090", "lat": 34.678515, "lng": 32.918564, "coord_source": "OSM Nominatim (Modestou Panteli, Erimi). Wolt slug is erimi; shop page lists 3090.", "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-erimi"}, {"name": "Berezka Cuisine Pafou Street", "wolt_slug": "berezka-pafou-street", "area": "Omonia / Zakaki", "address": "41 Pafou, 3051 Limassol", "postal_code": "3051", "lat": 34.6741, "lng": 33.015797, "coord_source": "OSM Nominatim (Pafou, Omonia)", "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-pafou-street"}, {"name": "Berezka Cuisine Marina", "wolt_slug": "berezka-marina-old-port", "area": "Old Port / Marina", "address": "6 Commandarias, 3036 Limassol", "postal_code": "3036", "lat": 34.672621, "lng": 33.044058, "coord_source": "Public place listing for Commandarias 6", "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-marina-old-port"}, {"name": "Berezka Cuisine Academy", "wolt_slug": "berezka-cuisine-academy", "area": "Katholiki", "address": "Arch. Makarios III Avenue 98, 3020 Limassol", "postal_code": "3020", "lat": 34.682877, "lng": 33.030031, "coord_source": "Public place listing for Makarios 98, Katholiki", "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-academy"}, {"name": "Berezka Cuisine Makariou", "wolt_slug": "berezka-cuisine-store", "area": "Neapolis", "address": "233A Arch. Makarios III Avenue, 3165 Limassol", "postal_code": "3165", "lat": 34.686107, "lng": 33.058606, "coord_source": "Public place listing for Makarios 233A, Neapolis", "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-store"}, {"name": "Berezka Cuisine Germasogeia", "wolt_slug": "berezka-cuisine-germasogeia", "area": "Potamos Germasogeias", "address": "Georgiou A' 91, Germasogeia 4048", "postal_code": "4048", "lat": 34.693481, "lng": 33.083083, "coord_source": "OSM Nominatim (Vasileos Georgiou I, Potamos Germasogeias)", "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-germasogeia"}, {"name": "Berezka Cuisine Four Seasons", "wolt_slug": "berezka-cuisine-franklin-roosevelt", "area": "Agios Tychonas / Amathus", "address": "Amathountos 96, Agios Tychon 4532", "postal_code": "4532", "lat": 34.708727, "lng": 33.124905, "coord_source": "OSM Nominatim (96 Leoforos Amathountos, Agios Tychonas)", "wolt_url": "https://wolt.com/en/cyp/limassol/restaurant/berezka-cuisine-franklin-roosevelt"}];
+    const areas = [];
+    const map = L.map("map").setView([34.685, 33.04], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap",
+      maxZoom: 16
+    }).addTo(map);
+
+    const maxOrders = Math.max(0, ...areas.map(a => a.orders || 0));
+    areas.forEach(a => {
+      if (a.lat == null || a.lng == null) return;
+      const radius = 180 + (maxOrders ? (a.orders / maxOrders) * 620 : 0);
+      L.circle([a.lat, a.lng], {
+        radius,
+        color: "#c45c26",
+        weight: 1,
+        fillColor: "#c45c26",
+        fillOpacity: 0.22
+      }).bindPopup(
+        `<strong>${a.area_name}</strong><br>${a.orders} orders` +
+        (a.share_pct != null ? ` (${a.share_pct}% of mapped)` : "")
+      ).addTo(map);
+    });
+
+    venues.forEach(v => {
+      L.circleMarker([v.lat, v.lng], {
+        radius: 7,
+        color: "#134f5c",
+        weight: 2,
+        fillColor: "#fff",
+        fillOpacity: 1
+      }).bindPopup(
+        `<strong>${v.name}</strong><br>${v.area}<br>${v.address}`
+      ).addTo(map);
+    });
+  </script>
+</body>
+</html>
